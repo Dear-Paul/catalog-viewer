@@ -1,88 +1,31 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import Viewer from "./components/Viewer";
-import Slider from "./components/Slider";
+import { Routes, Route } from 'react-router-dom';
 import Header from "./components/Header";
-import { catalogs } from "./assets/utils";
+import SignUp from './pages/SignUp'
 import "./App.css";
-import prevIcon from "./assets/icons/left-icon.png";
-import nextIcon from "./assets/icons/right_icon.png";
+import CatalogDashboard from "./pages/CatalogDashboard";
+import Login from "./pages/Login";
+import NotFound from './pages/NotFound'
+import {allowedSubdomain} from './assets/utils'
 
-let interval = 2000;
+
 function App() {
-  const [catalog] = useState([...catalogs]);
-  const [imageSelected, setImageSelect] = useState(catalog[0]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [autoSlide, setAutoSlide] = useState(false);
 
-  const timeoutRef = useRef(null);
+  const sub = window.location.hostname.split('.')[0];
 
-  const onPreviousSelect = () => {
-    const isFirstSlide = currentIndex === 0;
-    const newIndex = isFirstSlide ? catalog.length - 1 : currentIndex - 1;
-    setCurrentIndex(newIndex);
-    setImageSelect(catalog[newIndex]);
-  };
-  const onNextSelect = useCallback(() => {
-    const isLastSlide = currentIndex === catalog.length - 1;
-    const newIndex = isLastSlide ? 0 : currentIndex + 1;
-    setCurrentIndex(newIndex);
-    setImageSelect(catalog[newIndex]);
-  }, [currentIndex, catalog])
+  const isAllowedSubdomain = allowedSubdomain.includes(sub);
 
-  const onImageSelect = (event) => {
-    const index = event.target.id;
-    setCurrentIndex(parseInt(index));
-    setImageSelect(catalog[index]);
-  };
-  const autoSlideChange = (e) => {
-   if(e.target.checked){ 
-    setAutoSlide(true);
-   } else {
-     setAutoSlide(false);
-   }
-  }
-
-  const resetTimeOut = () => {
-    if(timeoutRef.current){
-      clearTimeout(timeoutRef.current)
-    }
-  }
-
-  useEffect(() => {
-    if(autoSlide){
-      resetTimeOut();
-      timeoutRef.current = setTimeout(onNextSelect, interval);
-      return () => {
-        resetTimeOut();;
-      }
-    }  
-  }, [autoSlide, onNextSelect])
-
+  
   return (
     <>
       <Header />
-      <div className="viewer">
-        <Viewer imageSelected={imageSelected} />
-      </div>
 
-      <div className="slider-container">
-        <div onClick={onPreviousSelect} className="direction-circle">
-          <img className="prev-icon" src={prevIcon} alt="prev-icon" />
-        </div>
-
-        <Slider
-          catalog={catalog}
-          currentIndex={currentIndex}
-          onImageSelect={onImageSelect}
-        />
-        <div onClick={onNextSelect} className="direction-circle">
-          <img className="prev-icon" src={nextIcon} alt="next-icon" />
-        </div>
-      </div>
-      <div className="click-slide">
-        <input type="checkbox" value={autoSlide} onChange={autoSlideChange} />
-        <span>Start slideshow</span>
-      </div>
+      <Routes>
+        <Route path="/dashboard" element={<CatalogDashboard/>}/>
+        <Route path="/" element={<SignUp/>}/>
+        <Route path="/login" element={<Login/>}/>
+        <Route path='*' element={<NotFound/>}/>
+      </Routes>
+  
     </>
   );
 }
